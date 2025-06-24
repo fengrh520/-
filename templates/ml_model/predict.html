@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>成绩预测</title>
+</head>
+<body>
+    {% extends 'base.html' %}
+    {% block title %}成绩预测 - 学生学习行为分析与成绩预测系统{% endblock %}
+    {% block content %}
+    <div class="main-card p-4 mx-auto" style="max-width:700px;">
+      <h3 class="mb-4 text-center">成绩预测</h3>
+      <form method="post" class="row g-3">
+        {% csrf_token %}
+        <div class="col-md-6">
+          <label class="form-label">学号</label>
+          <input type="text" class="form-control" name="student_id" value="{{ last.student_id|default_if_none:'' }}" placeholder="可选">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">年龄</label>
+          <input type="number" class="form-control" name="age" min="0" value="{{ last.age|default_if_none:'' }}" placeholder="可选">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">性别</label>
+          <select class="form-select" name="gender">
+            <option value="">请选择</option>
+            <option value="男" {% if last.gender == '男' %}selected{% endif %}>男</option>
+            <option value="女" {% if last.gender == '女' %}selected{% endif %}>女</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">每日学习时长(小时)</label>
+          <input type="number" step="0.1" class="form-control" name="study_hours_per_day" value="{{ last.study_hours_per_day|default_if_none:'' }}" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">社交媒体时长(小时)</label>
+          <input type="number" step="0.1" class="form-control" name="social_media_hours" value="{{ last.social_media_hours|default_if_none:'' }}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Netflix时长(小时)</label>
+          <input type="number" step="0.1" class="form-control" name="netflix_hours" value="{{ last.netflix_hours|default_if_none:'' }}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">兼职</label>
+          <select class="form-select" name="part_time_job">
+            <option value="">请选择</option>
+            <option value="1" {% if last.part_time_job == True or last.part_time_job == '1' %}selected{% endif %}>有</option>
+            <option value="0" {% if last.part_time_job == False or last.part_time_job == '0' %}selected{% endif %}>无</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">出勤率(%)</label>
+          <input type="number" step="0.1" class="form-control" name="attendance_percentage" value="{{ last.attendance_percentage|default_if_none:'' }}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">每日睡眠时长(小时)</label>
+          <input type="number" step="0.1" class="form-control" name="sleep_hours" value="{{ last.sleep_hours|default_if_none:'' }}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">饮食质量</label>
+          <select class="form-select" name="diet_quality">
+            <option value="">请选择</option>
+            <option value="好" {% if last.diet_quality == '好' %}selected{% endif %}>好</option>
+            <option value="一般" {% if last.diet_quality == '一般' %}selected{% endif %}>一般</option>
+            <option value="差" {% if last.diet_quality == '差' %}selected{% endif %}>差</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">锻炼频率(次/周)</label>
+          <input type="number" class="form-control" name="exercise_frequency" value="{{ last.exercise_frequency|default_if_none:'' }}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">父母学历</label>
+          <select class="form-select" name="parental_education_level">
+            <option value="">请选择</option>
+            <option value="本科及以上" {% if last.parental_education_level == '本科及以上' %}selected{% endif %}>本科及以上</option>
+            <option value="大专" {% if last.parental_education_level == '大专' %}selected{% endif %}>大专</option>
+            <option value="高中及以下" {% if last.parental_education_level == '高中及以下' %}selected{% endif %}>高中及以下</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">网络质量</label>
+          <select class="form-select" name="internet_quality">
+            <option value="">请选择</option>
+            <option value="好" {% if last.internet_quality == '好' %}selected{% endif %}>好</option>
+            <option value="一般" {% if last.internet_quality == '一般' %}selected{% endif %}>一般</option>
+            <option value="差" {% if last.internet_quality == '差' %}selected{% endif %}>差</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">心理健康评分(1-10)</label>
+          <input type="number" min="1" max="10" class="form-control" name="mental_health_rating" value="{{ last.mental_health_rating|default_if_none:'' }}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">课外活动参与</label>
+          <select class="form-select" name="extracurricular_participation">
+            <option value="">请选择</option>
+            <option value="1" {% if last.extracurricular_participation == True or last.extracurricular_participation == '1' %}selected{% endif %}>有</option>
+            <option value="0" {% if last.extracurricular_participation == False or last.extracurricular_participation == '0' %}selected{% endif %}>无</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">考试成绩(可选)</label>
+          <input type="number" step="0.1" class="form-control" name="exam_score" value="{{ last.exam_score|default_if_none:'' }}">
+        </div>
+        <div class="col-12">
+          <button type="submit" class="btn btn-primary w-100">预测</button>
+        </div>
+      </form>
+      {% if result %}
+      <div class="alert alert-success mt-4 text-center">
+        <h5>预测成绩：{{ result|floatformat:2 }}</h5>
+      </div>
+      {% endif %}
+      <div class="text-center mt-3">
+        <a href="/users/home/">返回主页</a>
+      </div>
+      {% if history %}
+      <div class="mt-5">
+        <h5 class="mb-3">最近10次预测历史</h5>
+        <div class="table-responsive">
+          <table class="table table-bordered table-sm align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>时间</th>
+                <th>学习时长</th>
+                <th>睡眠</th>
+                <th>出勤率</th>
+                <th>Netflix</th>
+                <th>社交媒体</th>
+                <th>预测成绩</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for rec in history %}
+              <tr>
+                <td>{{ rec.predict_time|date:'Y-m-d H:i' }}</td>
+                <td>{{ rec.study_hours_per_day }}</td>
+                <td>{{ rec.sleep_hours }}</td>
+                <td>{{ rec.attendance_percentage }}</td>
+                <td>{{ rec.netflix_hours }}</td>
+                <td>{{ rec.social_media_hours }}</td>
+                <td>{{ rec.predict_result|floatformat:2 }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="7" class="text-center">暂无历史记录</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    {% endblock %}
+</body>
+</html>

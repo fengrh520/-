@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block title %}主页 - 学生学习行为分析与成绩预测系统{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center align-items-start g-4">
+    <!-- 左侧：个人信息与功能 -->
+    <div class="col-12 col-md-5 col-lg-4">
+      <div class="main-card p-4 mb-4 text-center">
+        <!-- 头像展示，优先显示用户上传头像，否则显示预设头像，否则显示M -->
+        {% if request.user.avatar and request.user.avatar.url %}
+        <img src="{{ request.user.avatar.url }}" alt="头像" class="rounded-circle mb-3" width="80" height="80">
+        {% elif request.user.avatar_choice %}
+        <img src="/static/avatars/{{ request.user.avatar_choice }}" alt="预设头像" class="rounded-circle mb-3" width="80" height="80">
+        {% else %}
+        <div class="rounded-circle mb-3 d-flex align-items-center justify-content-center bg-secondary text-white" style="width:80px;height:80px;font-size:2.5rem;">M</div>
+        {% endif %}
+        <form method="post" enctype="multipart/form-data" class="mb-3">
+          {% csrf_token %}
+          {{ avatar_form.avatar.label_tag }}
+          {{ avatar_form.avatar }}
+          <div class="form-text"></div>
+          <div class="mt-2"></div>
+          {{ avatar_form.avatar_choice }}
+          <button type="submit" name="avatar_submit" class="btn btn-sm btn-outline-primary mt-2">更新头像</button>
+        </form>
+        <h5 class="mb-1">{{ request.user.username }}</h5>
+        <span class="badge bg-success mb-2">积分：{{ request.user.points }}</span>
+        <ul class="list-group mb-3 text-start">
+          <li class="list-group-item"><strong>邮箱：</strong> {{ request.user.email|default:'未绑定' }}</li>
+          <li class="list-group-item"><strong>注册时间：</strong> {{ request.user.date_joined|date:'Y-m-d H:i' }}</li>
+          <li class="list-group-item"><strong>角色：</strong> {% if request.user.role == 1 %}管理员{% else %}普通用户{% endif %}</li>
+        </ul>
+        <div class="d-grid gap-2 mb-2">
+          <a href="/ml/predict/" class="btn btn-primary">成绩预测</a>
+          <a href="/users/points/" class="btn btn-outline-warning">积分使用</a>
+          {% if request.user.role == 1 %}
+          <a href="/data/records/" class="btn btn-outline-secondary">数据管理</a>
+          <a href="/data/import/" class="btn btn-outline-secondary">数据导入</a>
+          <a href="/data/export/" class="btn btn-outline-secondary">数据导出</a>
+          {% endif %}
+        </div>
+        <a class="btn btn-link text-danger" href="/users/logout/">退出登录</a>
+      </div>
+    </div>
+    <!-- 右侧：公告和常见问题及数据预览 -->
+    <div class="col-12 col-md-7 col-lg-6">
+      <div class="main-card p-4 mb-4">
+        <h5 class="mb-3"><i class="bi bi-megaphone"></i> 系统公告</h5>
+        <ul class="mb-0">
+          <li>欢迎使用学生学习行为分析与成绩预测系统！</li>
+          <li>如遇问题请联系管理员。</li>
+        </ul>
+      </div>
+      <div class="main-card p-4 mb-4">
+        <h5 class="mb-3"><i class="bi bi-question-circle"></i> 常见问题</h5>
+        <ul class="mb-0 list-unstyled">
+          <li><a href="#" data-bs-toggle="modal" data-bs-target="#faqPredictModal">如何预测成绩？</a></li>
+          <li><a href="#" data-bs-toggle="modal" data-bs-target="#faqPointsModal">积分如何获得？</a></li>
+        </ul>
+      </div>
+      <div class="main-card p-4 mb-4" style="min-height: 340px; display: flex; flex-direction: column; justify-content: flex-start;">
+        <h5 class="mb-3"><i class="bi bi-table"></i> 部分学生数据预览</h5>
+        <div class="table-responsive flex-grow-1">
+          <table class="table table-sm table-bordered align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>学号</th><th>年龄</th><th>性别</th><th>日均学习时长</th><th>出勤率</th><th>考试成绩</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for stu in students %}
+              <tr>
+                <td>{{ stu.student_id }}</td>
+                <td>{{ stu.age }}</td>
+                <td>{{ stu.gender }}</td>
+                <td>{{ stu.study_hours_per_day }}</td>
+                <td>{{ stu.attendance_percentage }}%</td>
+                <td>{{ stu.exam_score }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="6" class="text-center">暂无数据</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- FAQ弹窗：如何预测成绩 -->
+<div class="modal fade" id="faqPredictModal" tabindex="-1" aria-labelledby="faqPredictModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="faqPredictModalLabel">如何预测成绩？</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+      </div>
+      <div class="modal-body text-start">
+        <ol>
+          <li>点击左侧“成绩预测”按钮，进入预测页面。</li>
+          <li>填写包括日均学习时长、作业完成情况、课堂互动次数等学习行为数据。</li>
+          <li>可选填写更多行为特征（如社交媒体时长、睡眠、饮食等）。</li>
+          <li>点击“预测”按钮，系统将基于机器学习模型给出成绩预测结果。</li>
+          <li>预测结果会显示在页面，并可在历史记录中查看。</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- FAQ弹窗：积分如何获得 -->
+<div class="modal fade" id="faqPointsModal" tabindex="-1" aria-labelledby="faqPointsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="faqPointsModalLabel">积分如何获得？</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+      </div>
+      <div class="modal-body text-start">
+        <ul>
+          <li>每完成一次成绩预测可获得积分奖励。</li>
+          <li>参与积分抽奖也可获得积分。</li>
+          <li>积分可用于兑换系统内特定权益或参与抽奖活动。</li>
+          <li>积分明细可在个人中心或主页查看。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_head %}
+<!-- Bootstrap Icons CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+{% endblock %}
+{% block extra_js %}
+<script>
+// 移除了抽奖相关JS代码（因模块已删除）
+</script>
+{% endblock %}

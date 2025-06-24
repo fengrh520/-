@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% block title %}积分使用 - 学生学习行为分析与成绩预测系统{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center align-items-start g-4">
+    <div class="col-12 col-md-8">
+      <div class="main-card p-4 mb-4">
+        <h4 class="mb-3"><i class="bi bi-coin"></i> 积分使用中心</h4>
+        <div class="mb-4">
+          <span class="badge bg-success">当前积分：{{ request.user.points }}</span>
+        </div>
+        <div class="main-card p-4 mb-4">
+          <h5 class="mb-3"><i class="bi bi-gift"></i> 积分抽奖</h5>
+          <div class="d-flex flex-column align-items-center">
+            <div id="lottery-wheel-container" class="mb-3">
+              <canvas id="lottery-wheel" width="220" height="220" style="background:transparent;"></canvas>
+              <button id="spin-btn" class="btn btn-warning mt-2" {% if lottery_left == 0 or request.user.points < 1 %}disabled{% endif %}>
+                <i class="bi bi-dice-3"></i> 转动抽奖转盘（消耗1积分）
+              </button>
+              <span class="ms-2 text-muted">今日剩余：{{ lottery_left }}/5</span>
+            </div>
+          </div>
+          <form method="post" id="lottery-form" style="display:none;">
+            {% csrf_token %}
+            <input type="hidden" name="lottery" value="1">
+          </form>
+          <div id="lottery-result-area">
+          {% if lottery_result is not None %}
+          <div class="alert alert-info py-2 mb-0 mt-2">
+            抽奖结果：获得 <strong>{{ lottery_result }}</strong> 积分！
+          </div>
+          {% endif %}
+          </div>
+        </div>
+        <div class="main-card p-4 mb-4">
+          <h5 class="mb-3"><i class="bi bi-book"></i> 积分兑换学习宝典</h5>
+          <form method="post" class="mb-2">
+            {% csrf_token %}
+            <button type="submit" name="exchange_tip" class="btn btn-success" {% if request.user.points < 1 %}disabled{% endif %}>
+              <i class="bi bi-arrow-repeat"></i> 兑换（消耗1积分）
+            </button>
+          </form>
+          {% if exchange_tip %}
+          <div class="alert alert-success py-2 mb-0 mt-2">
+            获得学习宝典：<span class="fw-bold">{{ exchange_tip }}</span>
+          </div>
+          {% endif %}
+        </div>
+        <div class="main-card p-4 mb-4">
+          <h5 class="mb-3"><i class="bi bi-clock-history"></i> 抽奖历史</h5>
+          <ul class="list-group mb-0">
+            {% for h in lottery_history %}
+            <li class="list-group-item py-1">{{ h.time|date:'Y-m-d H:i' }} 获得 <span class="fw-bold">{{ h.prize }}</span> 积分</li>
+            {% empty %}
+            <li class="list-group-item py-1 text-muted">暂无抽奖记录</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="main-card p-4 mb-4">
+          <h5 class="mb-3"><i class="bi bi-bookmark-check"></i> 学习宝典兑换历史</h5>
+          <ul class="list-group mb-0">
+            {% for h in exchange_history %}
+            <li class="list-group-item py-1">{{ h.time|date:'Y-m-d H:i' }} 获得：<span class="fw-bold">{{ h.tip }}</span></li>
+            {% empty %}
+            <li class="list-group-item py-1 text-muted">暂无兑换记录</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="main-card p-4 mb-4">
+          <h5 class="mb-3"><i class="bi bi-coin"></i> 积分明细</h5>
+          <ul class="list-group mb-0">
+            {% for log in point_logs %}
+            <li class="list-group-item py-1">{{ log.time|date:'Y-m-d H:i' }} <span class="fw-bold">{{ log.change }}</span>分 - {{ log.reason }}</li>
+            {% empty %}
+            <li class="list-group-item py-1 text-muted">暂无积分明细</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+// 转盘参数
+const prizes = [0, 1, 2, 3];
+const colors = ["#f8bbd0", "#b2dfdb", "#ffe082", "#c5cae9"];
+const labels = ["0积分", "1积分", "2积分", "3积分"];
+const wheelCanvas = document.getElementById('lottery-wheel');
+const ctx = wheelCanvas ? wheelCanvas.getContext('2d') : null;
+const spinBtn = document.getElementById('spin-btn');
+const form = document.getElementById('lottery-form');
+let spinning = false;
+function drawWheel(angle=0) {
+  if(!ctx) return;
+  const w = wheelCanvas.width, h = wheelCanvas.height, r = w/2;
+  ctx.clearRect(0,0,w,h);
+  for(let i=0;i<4;i++){
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(r,r);
+    ctx.arc(r,r,r-10, (i*90+angle)*Math.PI/180, ((i+1)*90+angle)*Math.PI/180);
+    ctx.closePath();
+    ctx.fillStyle = colors[i];
+    ctx.fill();
+    ctx.restore();
+    // 文字
+    ctx.save();
+    ctx.translate(r,r);
+    ctx.rotate(((i+0.5)*90+angle)*Math.PI/180);
+    ctx.textAlign = "center";
+    ctx.font = "18px sans-serif";
+    ctx.fillStyle = "#333";
+    ctx.fillText(labels[i], r-60, 10);
+    ctx.restore();
+  }
+  // 指针
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(r, r-90);
+  ctx.lineTo(r-10, r-70);
+  ctx.lineTo(r+10, r-70);
+  ctx.closePath();
+  ctx.fillStyle = "#e53935";
+  ctx.fill();
+  ctx.restore();
+}
+drawWheel();
+if(spinBtn){
+spinBtn.onclick = function(){
+  if(spinning) return;
+  spinning = true;
+  spinBtn.disabled = true;
+  // 随机奖项
+  const prizeIdx = Math.floor(Math.random()*4);
+  const targetAngle = 360*5 - prizeIdx*90;
+  let angle = 0, step = 0;
+  function animate(){
+    if(step<60){
+      angle += 20;
+    }else if(step<100){
+      angle += 10;
+    }else if(step<120){
+      angle += 5;
+    }else{
+      angle += (targetAngle-angle)/10;
+    }
+    drawWheel(angle%360);
+    step++;
+    if(step<130 || Math.abs((angle%360)-(targetAngle%360))>2){
+      requestAnimationFrame(animate);
+    }else{
+      drawWheel(targetAngle%360);
+      setTimeout(()=>{
+        // 提交表单，后端决定奖品
+        form.submit();
+      }, 600);
+    }
+  }
+  animate();
+}
+}
+</script>
+{% endblock %}

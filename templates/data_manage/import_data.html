@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>数据导入</title>
+</head>
+<body>
+    <h2>导入学生数据（CSV/Excel）</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="file" required>
+        <button type="submit">导入</button>
+    </form>
+    <a href="/data/records/">返回数据列表</a>
+</body>
+</html>

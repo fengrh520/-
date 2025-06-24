@@ -1,0 +1,14 @@
+{
+    // VS Code 任务配置：运行Django开发服务器
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run Django Server",
+            "type": "shell",
+            "command": "python manage.py runserver",
+            "group": "build",
+            "problemMatcher": [],
+            "detail": "启动Django开发服务器"
+        }
+    ]
+}

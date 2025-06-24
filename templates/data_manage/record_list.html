@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>数据管理</title>
+</head>
+<body>
+    <h2>学生学习行为数据列表</h2>
+    <table border="1">
+        <tr>
+            <th>学生</th><th>日期</th><th>学习时长</th><th>作业完成</th><th>互动次数</th><th>测试成绩</th>
+        </tr>
+        {% for r in records %}
+        <tr>
+            <td>{{ r.user.username }}</td>
+            <td>{{ r.date }}</td>
+            <td>{{ r.study_hours }}</td>
+            <td>{{ r.homework_done|yesno:"是,否" }}</td>
+            <td>{{ r.interaction_count }}</td>
+            <td>{{ r.test_score }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <a href="/users/home/">返回主页</a>
+</body>
+</html>
