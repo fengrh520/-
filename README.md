@@ -10,6 +10,9 @@
 - [使用说明](#使用说明)
 - [常见问题与解决方案](#常见问题与解决方案)
 - [项目结构说明](#项目结构说明)
+- [功能演示](#功能演示)
+- [贡献指南](#贡献指南)
+- [许可证](#许可证)
 - [联系方式](#联系方式)
 
 ---
@@ -117,10 +120,32 @@
      - 检查`ml_model/model.pkl`是否存在。
      - 确认`train_model.py`已正确训练并生成模型文件。
 
+## 功能演示
+如需查看系统主要界面和功能演示，请参考下方截图：
+
+![主页示例](static/avatars/1.png)
+![成绩预测页面](static/avatars/2.png)
+
+> 更多演示请见`static/avatars/`或自行运行项目体验。
+
+## 贡献指南
+欢迎对本项目提出建议或贡献代码！
+
+1. Fork 本仓库
+2. 新建分支 (`git checkout -b feature/your-feature`)
+3. 提交更改 (`git commit -am 'Add new feature'`)
+4. 推送分支 (`git push origin feature/your-feature`)
+5. 提交 Pull Request
+
+如有问题请通过 Issue 联系。
+
+## 许可证
+本项目采用 MIT License 许可。详情请见 LICENSE 文件。
+
 ## 联系方式
 如需技术支持或功能定制，请联系：
 - 邮箱：your_email@example.com
-- GitHub Issues
+- GitHub Issues: https://github.com/yourname/yourrepo/issues
 
 ---
 如需详细开发说明或功能扩展，请查阅源码注释或联系作者。
